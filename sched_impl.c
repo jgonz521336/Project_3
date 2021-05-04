@@ -91,13 +91,47 @@ static void wait_for_worker(sched_queue_t *queue)
         sem_wait(&cpuSem);
 }
 
+static thread_info_t * next_worker_rr(sched_queue_t *queue)
+{
+        if(list_size(queue->list) == 0) {
+                return NULL;
+        }
 
+        if(queue->currentWorker == NULL) {//queue was just empty and now has an item in it
+                queue->currentWorker = list_get_head(queue->list);
+        } else if (queue->nextWorker == NULL) {//the last currentWorker was the tail of the queue
+                if (queue->currentWorker == list_get_tail(queue->list)) {//the previous working thread is still in the queue and is the tail
+                        queue->currentWorker = list_get_head(queue->list);
+                } else {
+                        queue->currentWorker = list_get_tail(queue->list); //collect the new tail
+                }
+        } else {//next worker is a member of the list
+                queue->currentWorker = queue->nextWorker;
+        }
+
+        queue->nextWorker = queue->currentWorker->next;
+        return (thread_info_t*) queue->currentWorker->datum;
+}
+
+static thread_info_t * next_worker_fifo(sched_queue_t *queue) {
+        if(list_size(queue->list) == 0) {
+                return NULL;
+        }
+        else {
+                return (thread_info_t*) (list_get_head(queue->list))->datum;
+        }
+}
+
+static void wait_for_queue(sched_queue_t *queue)
+{
+        sem_wait(&emptySem);
+}
 
 
 /* You need to statically initialize these structures: */
 sched_impl_t sched_fifo = {
-	{ init_thread_info, destroy_thread_info /*, ...etc... */ }, 
-	{ init_sched_queue, destroy_sched_queue /*, ...etc... */ } },
+	{ init_thread_info, destroy_thread_info , enter_sched_queue, leave_sched_queue, wait_for_cpu, release_cpu}, 
+	{ init_sched_queue, destroy_sched_queue , wake_up_worker, wait_for_worker, next_worker_fifo, wait_for_queue} },
 sched_rr = {
-	{ init_thread_info, destroy_thread_info /*, ...etc... */ }, 
-	{ init_sched_queue, destroy_sched_queue /*, ...etc... */ } };
+	{ init_thread_info, destroy_thread_info , enter_sched_queue, leave_sched_queue, wait_for_cpu, release_cpu }, 
+	{ init_sched_queue, destroy_sched_queue , wake_up_worker, wait_for_worker, next_worker_rr, wait_for_queue } };

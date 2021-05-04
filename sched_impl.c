@@ -81,6 +81,19 @@ static void destroy_sched_queue(sched_queue_t *queue)
 
 /*...More functions go here...*/
 
+static void wake_up_worker(thread_info_t *info)
+{
+        sem_post(&info->runWorker);
+}
+
+static void wait_for_worker(sched_queue_t *queue)
+{
+        sem_wait(&cpuSem);
+}
+
+
+
+
 /* You need to statically initialize these structures: */
 sched_impl_t sched_fifo = {
 	{ init_thread_info, destroy_thread_info /*, ...etc... */ }, 

@@ -218,7 +218,7 @@ Q 1  What are some pros and cons of using the struct of function pointers
      approach as we did in the project to link different modules?  Does it
      significantly affect performance?  Give some examples of when you would
      and wouldn't use this approach, and why.
-     ANSWER: 
+     ANSWER: The pros and cons do not outweigh each other and the performance is not significantly affected by the use of function pointers.
 
 Q 2  Briefly describe the synchronization constructs you needed to implement
      this MP--i.e., how you mediated admission of threads to the scheduler
@@ -229,38 +229,38 @@ Q 2  Briefly describe the synchronization constructs you needed to implement
 Q 3  Why is the dummy scheduling implementation provided potentially
      unsafe (i.e. could result in invalid memory references)?  How does
      your implementation avoid this problem?
-     ANSWER: 
+     ANSWER: Yes the dummy scheduler can result in invalid memory refrences.
 
 Q 4  When using the FIFO or Round Robin scheduling algorithm, can
      sched_proc() ever "miss" any threads and exit early before all threads
      have been scheduled and run to completion?  If yes, give an example; if
      no, explain why not.
-     ANSWER:
+     ANSWER: No it is not possible because the algorithms won't exit until all threads are completed.
 
 Q 5  Why are the three variables in scheduler.h declared 'extern'?  What
      would happen if they were not declared 'extern'?  What would happen
      if they were not declared without the 'extern' in any file?
-     ANSWER:
+     ANSWER: It allows us the ability to hold and access their values so they can be completed.
 
 Q 6  Describe the behavior of exit_error() function in scheduler.c.  Why
      does exit_error() not use errno?
-     ANSWER:
+     ANSWER: It just prints an error statement
 
 Q 7  Does it matter whether the call to sched_ops->wait_for_queue(queue) in
      sched_proc() actually does anything?  How would it affect correctness
      if it just returned right away?  How about performance?
-     ANSWER:
+     ANSWER: Yes it is important. There could be a conflict with other threads resulting in incorrect results.
 
 Q 8  Explain how worker_proc() is able to call the appropriate
      implementation of wait_for_cpu() corresponding to the scheduling policy
      selected by the user on the command line.  Start from main() and
      briefly explain each step along the way.
-     ANSWER:
+     ANSWER: 
 
 Q 9  Is it possible that a worker thread would never proceed past the call to
      wa->ops->wait_for_cpu(&wa->info) when using one of the scheduling
      policies implemented in this MP?
-     ANSWER:
+     ANSWER: Yes it is possible
 
 Q 10 Explain how you would alter the program to demonstrate the "convoy"
      effect, when a large compute bound job that never yields to another

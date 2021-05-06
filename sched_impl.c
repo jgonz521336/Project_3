@@ -32,7 +32,7 @@ static void enter_sched_queue(thread_info_t *info)
         info->queueData = (list_elem_t*)malloc(sizeof(list_elem_t));
         list_elem_init(info->queueData, (void*)info);
         list_insert_tail(info->queue, info->queueData);
-        if(list_size(info->queue) == 1)//list was previously empty notify wait_for_queue
+        if(list_size(info->queue) == 1)
                 sem_post(&emptySemaphore);
         sem_init(&info->runWorker,0,0);
 }
@@ -59,22 +59,22 @@ static void init_sched_queue(sched_queue_t *queue, int queue_size)
 {
 	/*...Code goes here...*/
 	      if (queue_size <= 0) {
-                exit(-1); //exit entire program if queue has a size of zero
+                exit(-1); 
         }
         queue->currentWorker = NULL;
         queue->nextWorker = NULL;
         queue->list = (list_t*) malloc(sizeof(list_t));
         list_init(queue->list);
         sem_init(&controlSemaphore, 0, queue_size);
-        sem_init(&cpuSemaphore,0,0);//block on first call of wait_for_worker
-        sem_init(&emptySemaphore,0,0);//block on first call of wait_for_queue
+        sem_init(&cpuSemaphore,0,0);
+        sem_init(&emptySemaphore,0,0);
 }
 
 static void destroy_sched_queue(sched_queue_t *queue)
 {
 	/*...Code goes here...*/
 	    list_elem_t * temp;
-        while ((temp = list_get_head(queue->list)) != NULL) {//delete any remainign list elements
+        while ((temp = list_get_head(queue->list)) != NULL) {
                 list_remove_elem(queue->list, temp);
                 free(temp);
         }
@@ -99,15 +99,15 @@ static thread_info_t * next_worker_rr(sched_queue_t *queue)
                 return NULL;
         }
 
-        if(queue->currentWorker == NULL) {//queue was just empty and now has an item in it
+        if(queue->currentWorker == NULL) {
                 queue->currentWorker = list_get_head(queue->list);
-        } else if (queue->nextWorker == NULL) {//the last currentWorker was the tail of the queue
-                if (queue->currentWorker == list_get_tail(queue->list)) {//the previous working thread is still in the queue and is the tail
+        } else if (queue->nextWorker == NULL) {
+                if (queue->currentWorker == list_get_tail(queue->list)) {
                         queue->currentWorker = list_get_head(queue->list);
                 } else {
-                        queue->currentWorker = list_get_tail(queue->list); //collect the new tail
+                        queue->currentWorker = list_get_tail(queue->list); 
                 }
-        } else {//next worker is a member of the list
+        } else {
                 queue->currentWorker = queue->nextWorker;
         }
 

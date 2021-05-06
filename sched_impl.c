@@ -6,9 +6,11 @@
 #include <stdio.h>
 #include <sched.h>
 #include <assert.h>
-sem_t controlSem;
-sem_t cpuSem;
-sem_t emptySem;
+sem_t controlSemaphore;
+sem_t cpuSemaphore;
+sem_t emptySemaphore;
+
+
 static void init_thread_info(thread_info_t *info, sched_queue_t *queue)
 {
 	/*...Code goes here...*/
@@ -26,19 +28,19 @@ static void destroy_thread_info(thread_info_t *info)
 
 static void enter_sched_queue(thread_info_t *info)
 {
-        sem_wait(&controlSem);
+        sem_wait(&controlSemaphore);
         info->queueData = (list_elem_t*)malloc(sizeof(list_elem_t));
         list_elem_init(info->queueData, (void*)info);
         list_insert_tail(info->queue, info->queueData);
         if(list_size(info->queue) == 1)//list was previously empty notify wait_for_queue
-                sem_post(&emptySem);
+                sem_post(&emptySemaphore);
         sem_init(&info->runWorker,0,0);
 }
 
 static void leave_sched_queue(thread_info_t *info)
 {
         list_remove_elem(info->queue, info->queueData);
-        sem_post(&controlSem);
+        sem_post(&controlSemaphore);
 }
 
 static void wait_for_cpu(thread_info_t *info)
@@ -48,7 +50,7 @@ static void wait_for_cpu(thread_info_t *info)
 
 static void release_cpu(thread_info_t *info)
 {
-        sem_post(&cpuSem);
+        sem_post(&cpuSemaphore);
         sched_yield();
 }
 
@@ -63,9 +65,9 @@ static void init_sched_queue(sched_queue_t *queue, int queue_size)
         queue->nextWorker = NULL;
         queue->list = (list_t*) malloc(sizeof(list_t));
         list_init(queue->list);
-        sem_init(&controlSem, 0, queue_size);
-        sem_init(&cpuSem,0,0);//block on first call of wait_for_worker
-        sem_init(&emptySem,0,0);//block on first call of wait_for_queue
+        sem_init(&controlSemaphore, 0, queue_size);
+        sem_init(&cpuSemaphore,0,0);//block on first call of wait_for_worker
+        sem_init(&emptySemaphore,0,0);//block on first call of wait_for_queue
 }
 
 static void destroy_sched_queue(sched_queue_t *queue)
@@ -88,7 +90,7 @@ static void wake_up_worker(thread_info_t *info)
 
 static void wait_for_worker(sched_queue_t *queue)
 {
-        sem_wait(&cpuSem);
+        sem_wait(&cpuSemaphore);
 }
 
 static thread_info_t * next_worker_rr(sched_queue_t *queue)
@@ -124,7 +126,7 @@ static thread_info_t * next_worker_fifo(sched_queue_t *queue) {
 
 static void wait_for_queue(sched_queue_t *queue)
 {
-        sem_wait(&emptySem);
+        sem_wait(&emptySemaphore);
 }
 
 
